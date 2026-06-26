@@ -1,0 +1,169 @@
+# hw definition file for processing by chibios_hwdef.py
+# DevEBox STM32H743VIT6 V3.0 - Prometheus FC
+# Based on confirmed V2.0/V3.0 schematic (pins identical, USB-C only change)
+
+# MCU class and specific type
+MCU STM32H7xx STM32H743xx
+
+# board ID - use 1043 (safe gap above last known ID)
+APJ_BOARD_ID 7121
+
+# DevEBox uses 25MHz HSE crystal (Y2 on board)
+# CRITICAL: Matek/AET use 8MHz - wrong value = PLL failure = no boot
+OSCILLATOR_HZ 25000000
+
+FLASH_SIZE_KB 2048
+
+# bootloader occupies first 128KB sector
+FLASH_RESERVE_START_KB 128
+
+# ChibiOS system timer - TIM12 is safe on H743, not used by motors
+STM32_ST_USE_TIMER 12
+define CH_CFG_ST_RESOLUTION 16
+
+USB_STRING_MANUFACTURER "Prometheus-FC"
+USB_STRING_PRODUCT "DevEBoxH743"
+
+# ---- USB (fixed by OTG_FS peripheral, confirmed DevEBox schematic) ----
+PA11 OTG_FS_DM OTG1
+PA12 OTG_FS_DP OTG1
+
+# ---- SWD debug (confirmed DevEBox schematic) ----
+PA13 JTMS-SWDIO SWD
+PA14 JTCK-SWCLK SWD
+
+# ---- LED ----
+# DevEBox confirmed: D2 LED on PA1, active low
+PA1 LED_BOOTLOADER OUTPUT LOW
+define HAL_LED_ON 0
+
+# ---- microSD (confirmed DevEBox schematic - SDMMC1) ----
+PC8  SDMMC1_D0  SDMMC1
+PC9  SDMMC1_D1  SDMMC1
+PC10 SDMMC1_D2  SDMMC1
+PC11 SDMMC1_D3  SDMMC1
+PC12 SDMMC1_CK  SDMMC1
+PD2  SDMMC1_CMD SDMMC1
+
+# ---- SPI1 - IMU1 (ICM42688-P) ----
+# PA5/PA6 confirmed DevEBox SPI1; PD7 MOSI from AET (verify on your board)
+PA5  SPI1_SCK  SPI1
+PA6  SPI1_MISO SPI1
+PD7  SPI1_MOSI SPI1
+PC15 IMU1_CS   CS
+
+# ---- SPI4 - IMU2 (ICM42688-P) ----
+# PE12/PE13/PE14 confirmed available on LQFP100 H743
+PE12 SPI4_SCK  SPI4
+PE13 SPI4_MISO SPI4
+PE14 SPI4_MOSI SPI4
+PC13 IMU2_CS   CS
+
+# ---- I2C1 - Baro + Compass ----
+PB6 I2C1_SCL I2C1
+PB7 I2C1_SDA I2C1
+
+# ---- I2C2 - spare / external ----
+PB10 I2C2_SCL I2C2
+PB11 I2C2_SDA I2C2
+
+I2C_ORDER I2C1 I2C2
+
+# ---- UARTs ----
+# SERIAL_ORDER: USB, USART1(GPS), USART2(Radxa MAVLink), USART3(Telem),
+#               UART4(RC), USART6(spare), UART7(debug), UART8(spare)
+SERIAL_ORDER OTG1 USART1 USART2 USART3 UART4 USART6 UART7 UART8
+
+# USART1 - GPS
+PA9  USART1_TX USART1
+PA10 USART1_RX USART1
+
+# USART2 - Radxa Cubie A7S MAVLink link
+PD5 USART2_TX USART2
+PD6 USART2_RX USART2
+
+# USART3 - Telemetry (LoRa/RC link)
+PD8 USART3_TX USART3
+PD9 USART3_RX USART3
+
+# UART4 - RC input (SBUS/CRSF)
+PB8 UART4_RX UART4
+PB9 UART4_TX UART4
+
+# USART6 - spare
+PC6 USART6_TX USART6
+PC7 USART6_RX USART6
+
+# UART7 - debug console
+PE7 UART7_RX UART7
+PE8 UART7_TX UART7
+
+# UART8 - spare
+PE0 UART8_RX UART8
+PE1 UART8_TX UART8
+
+# ---- Motor outputs (DShot) - 4 motors for quadcopter ----
+# Using TIM4 on PD12-PD15 - clean timer, no DMA conflict with SPI1/SPI4
+# These are the 4 motor channels for Prometheus S500 frame
+PD12 TIM4_CH1 TIM4 PWM(1) GPIO(50)
+PD13 TIM4_CH2 TIM4 PWM(2) GPIO(51)
+PD14 TIM4_CH3 TIM4 PWM(3) GPIO(52)
+PD15 TIM4_CH4 TIM4 PWM(4) GPIO(53)
+
+# ---- SPI device definitions ----
+SPIDEV icm42688_0 SPI1 DEVID1 IMU1_CS MODE3 2*MHZ 16*MHZ
+SPIDEV icm42688_1 SPI4 DEVID1 IMU2_CS MODE3 2*MHZ 16*MHZ
+
+# Prevent SPI1 and SPI4 DMA from conflicting with each other
+DMA_NOSHARE SPI1* SPI4*
+
+# ---- IMU definitions ----
+IMU Invensensev3 SPI:icm42688_0 ROTATION_NONE
+IMU Invensensev3 SPI:icm42688_1 ROTATION_NONE
+
+define HAL_DEFAULT_INS_FAST_SAMPLE 1
+
+# ---- Barometer ----
+# MS5611 or DPS310 on I2C1 - update to match your actual baro chip
+BARO DPS310 I2C:0:0x76
+BARO MS5611 I2C:0:0x77
+
+# ---- Compass ----
+# No internal compass on DevEBox - probe external only
+define ALLOW_ARM_NO_COMPASS
+define AP_COMPASS_PROBING_ENABLED 1
+define HAL_I2C_INTERNAL_MASK 0
+define HAL_COMPASS_AUTO_ROT_DEFAULT 2
+
+# ---- Storage ----
+define HAL_STORAGE_SIZE 32768
+define HAL_OS_FATFS_IO 1
+
+# use flash pages 14-15 for parameter storage
+# H743 has 16 pages of 128KB each
+STORAGE_FLASH_PAGE 14
+
+# ---- DMA priority ----
+DMA_PRIORITY S*
+
+# ---- Serial protocol defaults ----
+define DEFAULT_SERIAL1_PROTOCOL SerialProtocol_GPS
+define DEFAULT_SERIAL1_BAUD 115
+define DEFAULT_SERIAL2_PROTOCOL SerialProtocol_MAVLink2
+define DEFAULT_SERIAL2_BAUD 115
+define DEFAULT_SERIAL3_PROTOCOL SerialProtocol_MAVLink2
+define DEFAULT_SERIAL3_BAUD 57
+define DEFAULT_SERIAL4_PROTOCOL SerialProtocol_RCIN
+
+# Battery Voltage and Current Sensing (ADC)
+PA2 BATT_VOLTAGE_SENS ADC1 SCALE(1)
+PA3 BATT_CURRENT_SENS ADC1 SCALE(1)
+define HAL_BATT_VOLT_PIN 14
+define HAL_BATT_CURR_PIN 15
+define HAL_BATT_VOLT_SCALE 11.0
+define HAL_BATT_CURR_SCALE 11.0
+
+# CAN Bus
+PD0 CAN1_RX CAN1
+PD1 CAN1_TX CAN1
+define HAL_NUM_CAN_IFACES 1
