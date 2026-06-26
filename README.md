@@ -1,6 +1,6 @@
 # Prometheus FC
 
-![Prometheus FC (DevEBox STM32H743VIT6)](https://shop.controllerstech.com/cdn/shop/files/750_2.png?v=1715678880&width=1445).
+![Prometheus FC (DevEBox STM32H743VIT6)](https://shop.controllerstech.com/cdn/shop/files/750_2.png?v=1715678880&width=1445)
 
 **Prometheus FC** is a custom ArduPilot hardware definition and configuration project that transforms a generic, low-cost **DevEBox STM32H743VIT6 V3.0** development board into a fully functional, high-performance flight controller for drones and rovers.
 
