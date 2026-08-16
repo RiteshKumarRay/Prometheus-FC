@@ -32,10 +32,23 @@ PA12 OTG_FS_DP OTG1
 PA13 JTMS-SWDIO SWD
 PA14 JTCK-SWCLK SWD
 
-# ---- LED ----
+# ---- LED and Buzzer ----
 # DevEBox confirmed: D2 LED on PA1, active low
 PA1 LED_BOOTLOADER OUTPUT LOW
-define HAL_LED_ON 0
+define HAL_LED_ON 1
+
+# External Status LEDs on PE2 (LED0), PE3 (LED1), PB0 (LED2) & Buzzer on PE4
+define HAL_GPIO_LED_ON 1
+PE2 LED0 OUTPUT LOW GPIO(90)
+PE3 LED1 OUTPUT LOW GPIO(91)
+PB0 LED2 OUTPUT LOW GPIO(92)
+
+# Sync PE2 LED with the Buzzer
+define HAL_BUZZER_LED_PIN 90
+
+PE4 BUZZER OUTPUT GPIO(80) LOW
+define HAL_BUZZER_PIN 80
+
 
 # ---- microSD (confirmed DevEBox schematic - SDMMC1) ----
 PC8  SDMMC1_D0  SDMMC1
@@ -45,29 +58,34 @@ PC11 SDMMC1_D3  SDMMC1
 PC12 SDMMC1_CK  SDMMC1
 PD2  SDMMC1_CMD SDMMC1
 
-# ---- SPI1 - IMU1 (ICM42688-P) ----
+# ---- SPI1 - IMU1 (BMI160) + Baro1 (BMP280) ----
 # PA5/PA6 confirmed DevEBox SPI1; PD7 MOSI from AET (verify on your board)
 PA5  SPI1_SCK  SPI1
 PA6  SPI1_MISO SPI1
 PD7  SPI1_MOSI SPI1
-PC15 IMU1_CS   CS
+PB5  IMU1_CS   CS    # BMI160 #1 Chip Select
+PB12 BARO1_CS  CS    # BMP280 #1 Chip Select
 
-# ---- SPI4 - IMU2 (ICM42688-P) ----
+# ---- SPI4 - IMU2 (BMI160) + Baro2 (BMP280) ----
 # PE12/PE13/PE14 confirmed available on LQFP100 H743
 PE12 SPI4_SCK  SPI4
-PE13 SPI4_MISO SPI4
+PE13 SPI4_MISO SPI4 PULLUP
 PE14 SPI4_MOSI SPI4
-PC13 IMU2_CS   CS
+PD4  IMU2_CS     CS  # BMI160 #2 Chip Select on SPI4 (PD4)
+PB13 BARO2_CS    CS  # BMP280 #2 Chip Select
 
 # ---- I2C1 - Baro + Compass ----
-PB6 I2C1_SCL I2C1
-PB7 I2C1_SDA I2C1
+PB6 I2C1_SCL I2C1 PULLUP
+PB7 I2C1_SDA I2C1 PULLUP
 
 # ---- I2C2 - spare / external ----
-PB10 I2C2_SCL I2C2
-PB11 I2C2_SDA I2C2
+PB10 I2C2_SCL I2C2 PULLUP
+PB11 I2C2_SDA I2C2 PULLUP
 
 I2C_ORDER I2C1 I2C2
+
+# Force both I2C buses to 100kHz standard mode (compatible with internal pull-ups)
+define HAL_I2C_INTERNAL_MASK 0
 
 # ---- UARTs ----
 # SERIAL_ORDER: USB, USART1(GPS), USART2(Radxa MAVLink), USART3(Telem),
@@ -111,22 +129,28 @@ PD14 TIM4_CH3 TIM4 PWM(3) GPIO(52)
 PD15 TIM4_CH4 TIM4 PWM(4) GPIO(53)
 
 # ---- SPI device definitions ----
-SPIDEV icm42688_0 SPI1 DEVID1 IMU1_CS MODE3 2*MHZ 16*MHZ
-SPIDEV icm42688_1 SPI4 DEVID1 IMU2_CS MODE3 2*MHZ 16*MHZ
+# IMU: BMI160 uses MODE3, 1MHz init / 10MHz run
+SPIDEV bmi160_0  SPI1 DEVID1 IMU1_CS  MODE3 1*MHZ 10*MHZ
+SPIDEV bmi160_1  SPI4 DEVID2 IMU2_CS  MODE3 1*MHZ 10*MHZ
+# BARO: BMP280 uses MODE3, 1MHz init / 10MHz run
+SPIDEV bmp280_0  SPI1 DEVID3 BARO1_CS MODE3 1*MHZ 10*MHZ
+SPIDEV bmp280_1  SPI4 DEVID4 BARO2_CS MODE3 1*MHZ 10*MHZ
 
 # Prevent SPI1 and SPI4 DMA from conflicting with each other
 DMA_NOSHARE SPI1* SPI4*
 
-# ---- IMU definitions ----
-IMU Invensensev3 SPI:icm42688_0 ROTATION_NONE
-IMU Invensensev3 SPI:icm42688_1 ROTATION_NONE
+# ---- IMU definitions (dual BMI160 on SPI1 + SPI4) ----
+IMU BMI160 SPI:bmi160_0 ROTATION_ROLL_180
+IMU BMI160 SPI:bmi160_1 ROTATION_ROLL_180
+IMU Invensense I2C:1:0x69 ROTATION_NONE
+IMU Invensensev3 I2C:1:0x68 ROTATION_NONE
+IMU Invensensev3 I2C:1:0x69 ROTATION_NONE
 
 define HAL_DEFAULT_INS_FAST_SAMPLE 1
 
-# ---- Barometer ----
-# MS5611 or DPS310 on I2C1 - update to match your actual baro chip
-BARO DPS310 I2C:0:0x76
-BARO MS5611 I2C:0:0x77
+# ---- Barometer (dual BMP280 on SPI1 + SPI4) ----
+BARO BMP280 SPI:bmp280_0
+BARO BMP280 SPI:bmp280_1
 
 # ---- Compass ----
 # No internal compass on DevEBox - probe external only
@@ -147,13 +171,15 @@ STORAGE_FLASH_PAGE 14
 DMA_PRIORITY S*
 
 # ---- Serial protocol defaults ----
-define DEFAULT_SERIAL1_PROTOCOL SerialProtocol_GPS
+define DEFAULT_SERIAL1_PROTOCOL SerialProtocol_GPS      # GPS1 on USART1
 define DEFAULT_SERIAL1_BAUD 115
-define DEFAULT_SERIAL2_PROTOCOL SerialProtocol_MAVLink2
+define DEFAULT_SERIAL2_PROTOCOL SerialProtocol_MAVLink2 # Radxa companion on USART2
 define DEFAULT_SERIAL2_BAUD 115
-define DEFAULT_SERIAL3_PROTOCOL SerialProtocol_MAVLink2
+define DEFAULT_SERIAL3_PROTOCOL SerialProtocol_MAVLink2 # Telemetry on USART3
 define DEFAULT_SERIAL3_BAUD 57
-define DEFAULT_SERIAL4_PROTOCOL SerialProtocol_RCIN
+define DEFAULT_SERIAL4_PROTOCOL SerialProtocol_RCIN     # RC Receiver on UART4
+define DEFAULT_SERIAL5_PROTOCOL SerialProtocol_GPS      # GPS2 on USART6
+define DEFAULT_SERIAL5_BAUD 115
 
 # Battery Voltage and Current Sensing (ADC)
 PA2 BATT_VOLTAGE_SENS ADC1 SCALE(1)
