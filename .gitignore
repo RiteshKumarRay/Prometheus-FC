@@ -1,0 +1,16 @@
+# Compiled / temporary files
+*.pyc
+__pycache__/
+*.swp
+*~
+.DS_Store
+
+# Logs
+*.log
+
+# Build artifacts and temp files
+build/
+*.bin.tmp
+
+# Git clone / test copies
+git clone repo/

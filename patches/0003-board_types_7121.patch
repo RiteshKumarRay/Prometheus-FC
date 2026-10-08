@@ -1,0 +1,9 @@
+diff --git a/Tools/AP_Bootloader/board_types.txt b/Tools/AP_Bootloader/board_types.txt
+index 8802585bcd..0598d89a79 100644
+--- a/Tools/AP_Bootloader/board_types.txt
++++ b/Tools/AP_Bootloader/board_types.txt
+@@ -621,3 +621,4 @@ AP_HW_AET-405-Mini_ODID             12512
+ 
+ # do not allocate board IDs above 10,000 for non-ODID boards.
+ # do not allocate board IDs above 19,999 in this file.
++AP_HW_DevEBoxH743                    7121

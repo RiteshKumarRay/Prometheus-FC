@@ -1,0 +1,85 @@
+diff --git a/libraries/AP_InertialSensor/AP_InertialSensor_BMI160.cpp b/libraries/AP_InertialSensor/AP_InertialSensor_BMI160.cpp
+index 63327ca7a1..9b2c755ff7 100644
+--- a/libraries/AP_InertialSensor/AP_InertialSensor_BMI160.cpp
++++ b/libraries/AP_InertialSensor/AP_InertialSensor_BMI160.cpp
+@@ -22,6 +22,7 @@
+ #include <utility>
+ 
+ #include <AP_HAL/AP_HAL.h>
++#include <GCS_MAVLink/GCS.h>
+ 
+ #include <AP_HAL/utility/sparse-endian.h>
+ #include <AP_Math/AP_Math.h>
+@@ -34,7 +35,8 @@
+ /* Registers and bits definitions. The indented ones are the bits for the upper
+  * register. */
+ #define BMI160_REG_CHIPID 0x00
+-#define     BMI160_CHIPID 0xD1
++#define     BMI160_CHIPID   0xD1
++#define     BMI160_CHIPID2  0xD3  // clone/variant BMI160 chip ID (common on Chinese boards)
+ #define BMI160_REG_ERR_REG 0x02
+ #define BMI160_REG_FIFO_LENGTH 0x22
+ #define BMI160_REG_FIFO_DATA 0x24
+@@ -458,29 +460,56 @@ bool AP_InertialSensor_BMI160::_hardware_init()
+ 
+     _dev->set_speed(AP_HAL::Device::SPEED_LOW);
+ 
++    // BMI160 powers up in I2C mode by default. Toggle CS via dummy reads on
++    // register 0x7F to switch it into SPI mode BEFORE any write attempts.
++    // Without this, write_register(SOFTRESET) fails in I2C mode, causing the
++    // loop to 'continue' before the 0x7F wakeup reads, so the chip stays stuck
++    // in I2C mode forever. Per BMI160 datasheet section 4.3.5.
++    DEV_PRINTF("BMI160: starting SPI wakeup sequence on bus %d\n", (int)_dev->get_bus_id());
++    {
++        uint8_t v;
++        for (uint8_t wakeup = 0; wakeup < 10; wakeup++) {
++            _dev->read_registers(0x7F, &v, 1);
++            hal.scheduler->delay(5);
++        }
++        hal.scheduler->delay(20); // settle after SPI wakeup
++    }
++    DEV_PRINTF("BMI160: SPI wakeup done, starting init loop\n");
++
+     for (unsigned i = 0; i < BMI160_HARDWARE_INIT_MAX_TRIES; i++) {
+         uint8_t v;
+         ret = _dev->write_register(BMI160_REG_CMD,
+                                    BMI160_CMD_SOFTRESET);
+ 
+         if (!ret) {
++            DEV_PRINTF("BMI160: softreset write failed on attempt %u, retrying wakeup\n", i);
++            // Softreset failed — do SPI wakeup again before retrying
++            for (uint8_t wakeup = 0; wakeup < 10; wakeup++) {
++                _dev->read_registers(0x7F, &v, 1);
++                hal.scheduler->delay(5);
++            }
++            hal.scheduler->delay(20);
+             continue;
+         }
+         hal.scheduler->delay(BMI160_SOFTRESET_DELAY_MSEC);
+ 
+         /* The datasheet recommends doing a read operation on the register 0x7F
+-         * in order to guarantee the sensor works using the SPI protocol. This
+-         * shouldn't have side effects for I2C. */
+-        ret = _dev->read_registers(0x7F, &v, 1);
+-        if (!ret) {
+-            continue;
++         * in order to guarantee the sensor works using the SPI protocol.
++         * After a softreset, chip re-enters I2C mode so wakeup is needed again. */
++        for (uint8_t wakeup = 0; wakeup < 5; wakeup++) {
++            _dev->read_registers(0x7F, &v, 1);
++            hal.scheduler->delay(2);
+         }
+ 
+         ret = _dev->read_registers(BMI160_REG_CHIPID, &v, 1);
+         if (!ret) {
++            DEV_PRINTF("BMI160: CHIPID read failed on attempt %u\n", i);
++            gcs().send_text(MAV_SEVERITY_INFO, "BMI160: CHIPID read failed");
+             continue;
+         }
+-        if (v != BMI160_CHIPID) {
++        DEV_PRINTF("BMI160 probe: got ID 0x%02X (expected 0x%02X or 0x%02X)\n", v, BMI160_CHIPID, BMI160_CHIPID2);
++        gcs().send_text(MAV_SEVERITY_INFO, "BMI160 probe: got ID 0x%02X", v);
++        if (v != BMI160_CHIPID && v != BMI160_CHIPID2) {
+             ret = false;
+             continue;
+         }

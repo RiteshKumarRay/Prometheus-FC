@@ -1,0 +1,24 @@
+diff --git a/libraries/AP_Notify/Buzzer.cpp b/libraries/AP_Notify/Buzzer.cpp
+index 019560e660..a19ed7ab11 100644
+--- a/libraries/AP_Notify/Buzzer.cpp
++++ b/libraries/AP_Notify/Buzzer.cpp
+@@ -36,6 +36,9 @@ bool Buzzer::init()
+ 
+     // setup the pin and ensure it's off
+     hal.gpio->pinMode(_pin, HAL_GPIO_OUTPUT);
++#ifdef HAL_BUZZER_LED_PIN
++    hal.gpio->pinMode(HAL_BUZZER_LED_PIN, HAL_GPIO_OUTPUT);
++#endif
+     on(false);
+ 
+     // set initial boot states. This prevents us issuing a arming
+@@ -146,6 +149,9 @@ void Buzzer::on(bool turn_on)
+     // pull pin high or low
+     const uint8_t buzz_on = pNotify->get_buzz_level();
+     hal.gpio->write(_pin, _flags.on? buzz_on : !buzz_on);
++#ifdef HAL_BUZZER_LED_PIN
++    hal.gpio->write(HAL_BUZZER_LED_PIN, _flags.on? buzz_on : !buzz_on);
++#endif
+ }
+ 
+ /// play_pattern - plays the defined buzzer pattern

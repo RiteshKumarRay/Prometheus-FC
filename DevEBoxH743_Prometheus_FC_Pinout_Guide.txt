@@ -30,14 +30,14 @@
     ✅ SD Card:            SDMMC1 enabled with FatFS
     ✅ Parameter Storage:  Flash pages 14-15 (32KB)
     ✅ Crash Dump:         Enabled
-     ⚙️  IMU 1:              BMI160 on SPI1 (CS: PC15) - wire and compile to enable
-     ⚙️  IMU 2:              BMI160 on SPI4 (CS: PC13) - wire and compile to enable
-     ⚙️  Barometer 1:        BMP280 on SPI1 (CS: PB12) - wire and compile to enable
-     ⚙️  Barometer 2:        BMP280 on SPI4 (CS: PB13) - wire and compile to enable
-     ⚙️  Compass 1:          HMC5883L on I2C1 (PB6/PB7) - auto-detected at 0x1E
-     ⚙️  Compass 2:          HMC5883L on I2C2 (PB10/PB11) - auto-detected at 0x1E
-     ⚙️  GPS 1:              u-blox M8N on SERIAL1 (PA9/PA10)
-     ⚙️  GPS 2:              u-blox M8N on SERIAL5 (PC6/PC7)
+    ✅ IMU 1:              BMI160 on SPI1 (CS: PB5) - Tested & Working
+    ✅ IMU 2:              BMI160 on SPI4 (CS: PD4) - Tested & Working (clone ID 0xD3)
+    ✅ Barometer 1:        BMP280 on SPI1 (CS: PB12) - Tested & Working
+    ✅ Barometer 2:        BMP280 on SPI4 (CS: PB13) - Tested & Working
+    ✅ Compass 1:          External on I2C1 (PB6/PB7) - Tested & Working
+    ✅ Compass 2:          External on I2C2 (PB10/PB11) - Tested & Working
+    ✅ GPS 1:              u-blox M8N on SERIAL1 (PA9/PA10) - 3D Fix Tested
+    ✅ GPS 2:              u-blox on SERIAL5 (PC6/PC7) - 3D Fix Tested
 
 ================================================================================
                        SERIAL PORTS (8 TOTAL) - ACTIVE
@@ -128,16 +128,16 @@
  ──────────────────────────────────────────────────────────────────────────────
  SPI1  PA5     PA6     PD7     BMI160 #1 (CS: PB5)             IMU1
                                BMP280 #1 (CS: PB12)            Baro1
- SPI4  PE12    PE13    PE14    BMI160 #2 (CS: PB4)             IMU2
+ SPI4  PE12    PE13    PE14    BMI160 #2 (CS: PD4)             IMU2
                                BMP280 #2 (CS: PB13)            Baro2
 
  SPI Device Config (in hwdef.dat):
    bmi160_0: SPI1, DEVID1, CS=PB5,  MODE3, 1MHz init / 10MHz run
-   bmi160_1: SPI4, DEVID2, CS=PE3,  MODE3, 1MHz init / 10MHz run
+   bmi160_1: SPI4, DEVID2, CS=PD4,  MODE3, 1MHz init / 10MHz run
    bmp280_0: SPI1, DEVID3, CS=PB12, MODE3, 1MHz init / 10MHz run
    bmp280_1: SPI4, DEVID4, CS=PB13, MODE3, 1MHz init / 10MHz run
 
- DMA: SPI1 and SPI4 have dedicated DMA (DMA_NOSHARE), no conflicts.
+ DMA: SPI1, SPI4, and TIM4 have dedicated DMA (DMA_NOSHARE), no conflicts.
  Each SPI bus carries 1 IMU + 1 Baro, fully isolated from the other.
 
  WIRING - BMI160 MODULE (IMU1 on SPI1):  BMI160 MODULE (IMU2 on SPI4):
@@ -150,7 +150,7 @@
    │ GND    │ ← GND           │           │ GND    │ ← GND           │
    │ SCL    │ ← PA5  (SCK)    │           │ SCL    │ ← PE12 (SCK)    │
    │ SDA    │ ← PD7  (MOSI)   │           │ SDA    │ ← PE14 (MOSI)   │
-   │ CS     │ ← PB5  (CS)     │           │ CS     │ ← PB4  (CS)     │
+   │ CS     │ ← PB5  (CS)     │           │ CS     │ ← PD4  (CS)     │
    │ SA0    │ → PA6  (MISO)   │           │ SA0    │ → PE13 (MISO)   │
    └──────────────────────────┘           └──────────────────────────┘
    NOTE: SA0 is the MISO/SDO pin on your BMI160 module.
@@ -232,8 +232,9 @@
 
  Supported Protocols: PWM, OneShot125, OneShot42, DShot150/300/600/1200
 
- For DShot (recommended):
-   Set MOT_PWM_TYPE = 6 (DShot600) or 4 (DShot150)
+ For DShot (recommended for BLHeli_S):
+   Set MOT_PWM_TYPE = 5 (DShot300) or 6 (DShot600)
+   (Other options: 0=Normal PWM, 2=OneShot125, 4=DShot150)
 
  Motor Order (ArduCopter "X" frame, looking from top):
           Front
@@ -293,16 +294,21 @@
  These pins are reserved for debugging. Do NOT reassign.
 
 ================================================================================
-                         LED (ACTIVE - ACTIVE LOW)
+                       LED & BUZZER (ACTIVE & CONFIGURED)
 ================================================================================
 
- Signal            Pin     Notes
- ────────────────────────────────────────
- LED_BOOTLOADER    PA1     D2 on DevEBox board (active LOW)
+ Signal            Pin     GPIO      Notes
+ ───────────────────────────────────────────────────────────────────────────────
+ LED_BOOTLOADER    PA1     —         D2 on DevEBox board (active LOW)
+ LED0 (Status)     PE2     GPIO(90)  External Status LED (synced with Buzzer)
+ LED1 (Status)     PE3     GPIO(91)  External Status LED 1
+ LED2 (Status)     PB0     GPIO(92)  External Status LED 2
+ BUZZER            PE4     GPIO(80)  Active Buzzer (PE2 flashes in sync with buzzer)
 
- LED behavior:
-   - Bootloader: Fast blink during bootloader wait
-   - ArduPilot: Indicates armed/disarmed status
+ LED & Buzzer behavior:
+   - Bootloader: Fast blink on PA1 (D2) during bootloader wait
+   - Status LEDs: PE2, PE3, PB0 indicate arming, GPS lock, failsafe status
+   - Buzzer: PE4 plays standard ArduPilot notification tunes with PE2 LED sync
 
 ================================================================================
                     COMPLETE PIN ASSIGNMENT MAP (ALL USED PINS)
@@ -321,11 +327,11 @@
 
  PORT B (PB):
  ──────────────────────────────────────────────────────────────
-  PB0  - ★ FREE                    PB8  - UART4_RX (RC input)
+  PB0  - LED2 (Status LED 2)       PB8  - UART4_RX (RC input)
   PB1  - ★ FREE                    PB9  - UART4_TX (RC input)
   PB2  - ★ FREE                    PB10 - I2C2_SCL (Compass #2 HMC5883L)
   PB3  - ★ FREE                    PB11 - I2C2_SDA (Compass #2 HMC5883L)
-  PB4  - IMU2_CS (BMI160 #2, SPI4)  PB12 - BARO1_CS (BMP280 #1 SPI CS)
+  PB4  - ★ FREE                    PB12 - BARO1_CS (BMP280 #1 SPI CS)
   PB5  - IMU1_CS  (BMI160 #1 CS)   PB13 - BARO2_CS (BMP280 #2 SPI CS)
   PB6  - I2C1_SCL (Compass #1)     PB14 - ★ FREE
   PB7  - I2C1_SDA (Compass #1)     PB15 - ★ FREE
@@ -347,7 +353,7 @@
   PD1  - CAN1_TX                   PD9  - USART3_RX (telem)
   PD2  - SDMMC1_CMD                PD10 - ★ FREE
   PD3  - ★ FREE                    PD11 - ★ FREE
-  PD4  - ★ FREE                    PD12 - TIM4_CH1 / PWM1 (Motor1)
+  PD4  - IMU2_CS (BMI160 #2, SPI4)  PD12 - TIM4_CH1 / PWM1 (Motor1)
   PD5  - USART2_TX (Radxa)         PD13 - TIM4_CH2 / PWM2 (Motor2)
   PD6  - USART2_RX (Radxa)         PD14 - TIM4_CH3 / PWM3 (Motor3)
   PD7  - SPI1_MOSI (IMU1)          PD15 - TIM4_CH4 / PWM4 (Motor4)
@@ -356,12 +362,12 @@
  ──────────────────────────────────────────────────────────────
   PE0  - UART8_RX (spare)          PE8  - UART7_TX (spare)
   PE1  - UART8_TX (spare)          PE9  - ★ FREE
-  PE2  - ★ FREE                    PE10 - ★ FREE
-  PE3  - ★ FREE                    PE11 - ★ FREE
-  PE4  - ★ FREE                    PE12 - SPI4_SCK (IMU2)
+  PE2  - LED0 (Status LED 0)       PE10 - ★ FREE
+  PE3  - LED1 (Status LED 1)       PE11 - ★ FREE
+  PE4  - BUZZER (GPIO 80)          PE12 - SPI4_SCK (IMU2)
   PE5  - ★ FREE                    PE13 - SPI4_MISO (IMU2)
   PE6  - ★ FREE                    PE14 - SPI4_MOSI (IMU2)
-  PE7  - UART7_RX (spare)          PC15 - IMU1_CS (BMI160 #1, SPI1)
+  PE7  - UART7_RX (spare)          PE15 - ★ FREE
 
  *PC14/PC15: These pins double as 32.768kHz LSE crystal oscillator pins.
   If the DevEBox has a 32K crystal fitted, PC14 is NOT available.
@@ -435,7 +441,7 @@
  │  Any free GPIO pin with timer support:                                │
  │  PA7  - TIM3_CH2 (NeoPixel/WS2812B LED strip)                         │
  │                                                                       │
- │  PB5  - GPIO (safety switch)                                          │
+ │  PB5  - IMU1_CS (BMI160 #1 Chip Select on SPI1)                       │
  └─────────────────────────────────────────────────────────────────────────┘
 
 ================================================================================
@@ -457,14 +463,14 @@
     RC Receiver ──────────┤ PB8/PB9  (SER4)  │
     (CRSF/ELRS)           │                  │
                           │                  │
-    Barometer ────────────┤ PB6/PB7  (I2C1)  │
+    Baro 1 & 2 (SPI) ─────┤ PB12/13(SPI1/4)  │
     (DPS310/MS5611)       │                  │
                           │                  │
-    IMU1 (ICM42688) ──────┤ PA5/6,PD7 (SPI1) │
-                     CS───┤ PC15             │
+    IMU1 (BMI160) ────────┤ PA5/6,PD7 (SPI1) │
+                     CS───┤ PB5              │
                           │                  │
-    IMU2 (ICM42688) ──────┤ PE12/13/14(SPI4) │
-                     CS───┤ PC13             │
+    IMU2 (BMI160) ────────┤ PE12/13/14(SPI4) │
+                     CS───┤ PD4              │
                           │                  │
     Motor 1 ESC ◄─────────┤ PD12 (PWM1)      │
     Motor 2 ESC ◄─────────┤ PD13 (PWM2)      │

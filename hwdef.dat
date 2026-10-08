@@ -5,7 +5,7 @@
 # MCU class and specific type
 MCU STM32H7xx STM32H743xx
 
-# board ID - use 1043 (safe gap above last known ID)
+# Board ID 7121 (AP_HW_DevEBoxH743 registered in Tools/AP_Bootloader/board_types.txt)
 APJ_BOARD_ID 7121
 
 # DevEBox uses 25MHz HSE crystal (Y2 on board)
@@ -137,7 +137,10 @@ SPIDEV bmp280_0  SPI1 DEVID3 BARO1_CS MODE3 1*MHZ 10*MHZ
 SPIDEV bmp280_1  SPI4 DEVID4 BARO2_CS MODE3 1*MHZ 10*MHZ
 
 # Prevent SPI1 and SPI4 DMA from conflicting with each other
-DMA_NOSHARE SPI1* SPI4*
+# Also prevent TIM4 (motor outputs PD12-PD15) from sharing DMA with GPS UARTs
+# Without this, GPS1 (USART1_TX) and GPS2 (USART6_TX) share stream (2,7) with TIM4_UP
+# causing corrupted/dropped motor DShot/PWM pulses
+DMA_NOSHARE SPI1* SPI4* TIM4*
 
 # ---- IMU definitions (dual BMI160 on SPI1 + SPI4) ----
 IMU BMI160 SPI:bmi160_0 ROTATION_ROLL_180
