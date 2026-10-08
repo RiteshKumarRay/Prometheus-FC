@@ -85,38 +85,13 @@ Prometheus FC/
 
 ## 🎥 Flight Testing & Video Demonstrations
 
-Real flight testing footage and CAD design demonstrations recorded from the test vehicle:
+Real flight footage and CAD design demonstrations recorded from the test vehicle:
 
-### 1. Flight Test 2 — Loiter Mode & GPS Lock (Post-PID Tuning)
-* **Description:** Autonomous position-hold in **Loiter mode** following minor rate PID adjustments. Demonstrates GPS lock stability, EKF3 dual-sensor convergence, and smooth motor throttle response.
-* **Video Clip:** [`media/2nd_flightTest_loitermode_gpsLock_after_MinorPIDs_tuning.mp4`](media/2nd_flightTest_loitermode_gpsLock_after_MinorPIDs_tuning.mp4)
-
-<video src="media/2nd_flightTest_loitermode_gpsLock_after_MinorPIDs_tuning.mp4" controls="controls" width="100%"></video>
-
-[![Flight Test 2 - Loiter Mode & GPS Lock](media/thumb_2nd_flight_loiter.jpg)](media/2nd_flightTest_loitermode_gpsLock_after_MinorPIDs_tuning.mp4)
-*(Click thumbnail above to open / download video)*
-
----
-
-### 2. Flight Test 1 — Maiden Hover with Stock Pixhawk PIDs
-* **Description:** Initial maiden hover test immediately following firmware compilation and flashing, operating with baseline stock multicopter PID gains before fine-tuning.
-* **Video Clip:** [`media/1st_flight_prometheusFC_withstock_pixhawkPIDs.mp4`](media/1st_flight_prometheusFC_withstock_pixhawkPIDs.mp4)
-
-<video src="media/1st_flight_prometheusFC_withstock_pixhawkPIDs.mp4" controls="controls" width="100%"></video>
-
-[![Flight Test 1 - Maiden Flight](media/thumb_1st_flight.jpg)](media/1st_flight_prometheusFC_withstock_pixhawkPIDs.mp4)
-*(Click thumbnail above to open / download video)*
-
----
-
-### 3. KiCad 3D Hardware Model
-* **Description:** 3D CAD board layout animation illustrating component arrangement, header pin routing, and carrier layout for the DevEBox STM32H743 module.
-* **Video Clip:** [`media/PrometheusFC_kicad3d.mp4`](media/PrometheusFC_kicad3d.mp4)
-
-<video src="media/PrometheusFC_kicad3d.mp4" controls="controls" width="100%"></video>
-
-[![KiCad 3D Hardware Render](media/thumb_kicad3d.jpg)](media/PrometheusFC_kicad3d.mp4)
-*(Click thumbnail above to open / download video)*
+| Preview (Click to Play Video) | Flight Details & Technical Highlights |
+| :---: | :--- |
+| <a href="media/2nd_flightTest_loitermode_gpsLock_after_MinorPIDs_tuning.mp4"><img src="media/preview_2nd_flight_loiter.gif" width="360" alt="Flight Test 2 - Loiter Mode & GPS Lock"/><br><sub>▶️ <b>Watch Full Video (MP4, 60fps)</b></sub></a> | **1. Flight Test 2: Autonomous Loiter Mode & GPS Lock**<br><br>• **Test Objective:** Autonomous position-hold in **Loiter mode** following minor rate PID tuning.<br>• **Results:** Rock-solid GPS lock, zero horizontal drift, stable altitude hold, and smooth dual-sensor EKF3 fusion.<br>• **Footage:** [`media/2nd_flightTest_loitermode_gpsLock_after_MinorPIDs_tuning.mp4`](media/2nd_flightTest_loitermode_gpsLock_after_MinorPIDs_tuning.mp4) (20s, 60fps) |
+| <a href="media/1st_flight_prometheusFC_withstock_pixhawkPIDs.mp4"><img src="media/preview_1st_flight.gif" width="220" alt="Flight Test 1 - Maiden Hover"/><br><sub>▶️ <b>Watch Full Video (MP4, 30fps)</b></sub></a> | **2. Flight Test 1: Maiden Hover with Stock Pixhawk PIDs**<br><br>• **Test Objective:** Initial takeoff and hover test right after firmware flashing.<br>• **Results:** Safe takeoff and baseline hover stability operating on default multicopter PID parameters.<br>• **Footage:** [`media/1st_flight_prometheusFC_withstock_pixhawkPIDs.mp4`](media/1st_flight_prometheusFC_withstock_pixhawkPIDs.mp4) (10s, 30fps) |
+| <a href="media/PrometheusFC_kicad3d.mp4"><img src="media/preview_kicad3d.gif" width="360" alt="KiCad 3D Hardware CAD Render"/><br><sub>▶️ <b>Watch Full Video (MP4, 60fps)</b></sub></a> | **3. KiCad 3D Hardware CAD Board Design**<br><br>• **Design:** Custom PCB carrier board for the DevEBox STM32H743 module.<br>• **Results:** 3D CAD visualization showing component placement, header pin routing, and sensor bus layout.<br>• **Footage:** [`media/PrometheusFC_kicad3d.mp4`](media/PrometheusFC_kicad3d.mp4) (10s, 60fps) |
 
 ---
 
