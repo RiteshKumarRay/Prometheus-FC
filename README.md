@@ -20,7 +20,7 @@ Unlike off-the-shelf commercial flight controllers with soldered onboard sensors
 
 ## Hardware Gallery
 
-| Top View (DevEBox + Wiring) | Front View (Connectors & Header Pins) | Mounted on Drone Frame |
+| Top View (DevEBox + Sensors) | Front View | Mounted on Drone Frame |
 | :---: | :---: | :---: |
 | <img src="media/FC_topview.jpeg" width="300" alt="Prometheus FC Top View"/> | <img src="media/FC_FrontView.jpeg" width="300" alt="Prometheus FC Front View"/> | <img src="media/FC_on_F450frame.jpeg" width="300" alt="Prometheus FC Mounted on Frame"/> |
 
