@@ -18,6 +18,14 @@ Unlike off-the-shelf commercial flight controllers with soldered onboard sensors
 
 ---
 
+## Hardware Gallery
+
+| Top View (DevEBox + Wiring) | Front View (Connectors & Header Pins) | Mounted on Drone Frame |
+| :---: | :---: | :---: |
+| <img src="media/FC_topview.jpeg" width="300" alt="Prometheus FC Top View"/> | <img src="media/FC_FrontView.jpeg" width="300" alt="Prometheus FC Front View"/> | <img src="media/FC_on_F450frame.jpeg" width="300" alt="Prometheus FC Mounted on Frame"/> |
+
+---
+
 ## Hardware Specifications
 
 | Parameter | Specification |
@@ -42,6 +50,14 @@ Prometheus FC/
 ├── hwdef-bl.dat                               # ArduPilot bootloader hardware definition
 ├── DevEBoxH743_Prometheus_FC_Pinout_Guide.txt # Complete wire-by-wire connection guide
 │
+├── media/                                     # Flight test videos, hardware photos, and 3D CAD renders
+│   ├── FC_topview.jpeg                        # Hardware top view
+│   ├── FC_FrontView.jpeg                      # Hardware front connector view
+│   ├── FC_on_F450frame.jpeg                   # Flight controller mounted on quadcopter frame
+│   ├── 1st_flight_prometheusFC_withstock_pixhawkPIDs.mp4            # Maiden flight test video
+│   ├── 2nd_flightTest_loitermode_gpsLock_after_MinorPIDs_tuning.mp4 # Loiter mode GPS lock flight test
+│   └── PrometheusFC_kicad3d.mp4               # KiCad 3D CAD animation
+│
 ├── bootloader/                                # Pre-compiled bootloader binaries
 │   ├── Prometheus-FC_bl.bin                   # Raw binary (for DFU / ST-Link at 0x08000000)
 │   └── Prometheus-FC_bl.hex                   # Intel HEX (for STM32CubeProgrammer)
@@ -64,6 +80,43 @@ Prometheus FC/
     ├── flash_bootloader.sh                    # Flashes bootloader via dfu-util or st-flash
     └── deep_sensor_check.py                   # Live MAVLink verification script for all dual sensors
 ```
+
+---
+
+## 🎥 Flight Testing & Video Demonstrations
+
+Real flight testing footage and CAD design demonstrations recorded from the test vehicle:
+
+### 1. Flight Test 2 — Loiter Mode & GPS Lock (Post-PID Tuning)
+* **Description:** Autonomous position-hold in **Loiter mode** following minor rate PID adjustments. Demonstrates GPS lock stability, EKF3 dual-sensor convergence, and smooth motor throttle response.
+* **Video Clip:** [`media/2nd_flightTest_loitermode_gpsLock_after_MinorPIDs_tuning.mp4`](media/2nd_flightTest_loitermode_gpsLock_after_MinorPIDs_tuning.mp4)
+
+<video src="media/2nd_flightTest_loitermode_gpsLock_after_MinorPIDs_tuning.mp4" controls="controls" width="100%"></video>
+
+[![Flight Test 2 - Loiter Mode & GPS Lock](media/thumb_2nd_flight_loiter.jpg)](media/2nd_flightTest_loitermode_gpsLock_after_MinorPIDs_tuning.mp4)
+*(Click thumbnail above to open / download video)*
+
+---
+
+### 2. Flight Test 1 — Maiden Hover with Stock Pixhawk PIDs
+* **Description:** Initial maiden hover test immediately following firmware compilation and flashing, operating with baseline stock multicopter PID gains before fine-tuning.
+* **Video Clip:** [`media/1st_flight_prometheusFC_withstock_pixhawkPIDs.mp4`](media/1st_flight_prometheusFC_withstock_pixhawkPIDs.mp4)
+
+<video src="media/1st_flight_prometheusFC_withstock_pixhawkPIDs.mp4" controls="controls" width="100%"></video>
+
+[![Flight Test 1 - Maiden Flight](media/thumb_1st_flight.jpg)](media/1st_flight_prometheusFC_withstock_pixhawkPIDs.mp4)
+*(Click thumbnail above to open / download video)*
+
+---
+
+### 3. KiCad 3D Hardware Model
+* **Description:** 3D CAD board layout animation illustrating component arrangement, header pin routing, and carrier layout for the DevEBox STM32H743 module.
+* **Video Clip:** [`media/PrometheusFC_kicad3d.mp4`](media/PrometheusFC_kicad3d.mp4)
+
+<video src="media/PrometheusFC_kicad3d.mp4" controls="controls" width="100%"></video>
+
+[![KiCad 3D Hardware Render](media/thumb_kicad3d.jpg)](media/PrometheusFC_kicad3d.mp4)
+*(Click thumbnail above to open / download video)*
 
 ---
 
