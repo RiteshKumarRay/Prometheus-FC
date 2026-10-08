@@ -87,7 +87,7 @@ Prometheus FC/
 
 Real flight footage and CAD design demonstrations recorded from the test vehicle:
 
-| Preview (Click to Play Video) | Flight Details & Technical Highlights |
+| Download for Preview | Flight Details & Technical Highlights |
 | :---: | :--- |
 | <a href="media/2nd_flightTest_loitermode_gpsLock_after_MinorPIDs_tuning.mp4"><img src="media/preview_2nd_flight_loiter.gif" width="360" alt="Flight Test 2 - Loiter Mode & GPS Lock"/><br><sub>▶️ <b>Watch Full Video (MP4, 60fps)</b></sub></a> | **1. Flight Test 2: Autonomous Loiter Mode & GPS Lock**<br><br>• **Test Objective:** Autonomous position-hold in **Loiter mode** following minor rate PID tuning.<br>• **Results:** Rock-solid GPS lock, zero horizontal drift, stable altitude hold, and smooth dual-sensor EKF3 fusion.<br>• **Footage:** [`media/2nd_flightTest_loitermode_gpsLock_after_MinorPIDs_tuning.mp4`](media/2nd_flightTest_loitermode_gpsLock_after_MinorPIDs_tuning.mp4) (20s, 60fps) |
 | <a href="media/1st_flight_prometheusFC_withstock_pixhawkPIDs.mp4"><img src="media/preview_1st_flight.gif" width="220" alt="Flight Test 1 - Maiden Hover"/><br><sub>▶️ <b>Watch Full Video (MP4, 30fps)</b></sub></a> | **2. Flight Test 1: Maiden Hover with Stock Pixhawk PIDs**<br><br>• **Test Objective:** Initial takeoff and hover test right after firmware flashing.<br>• **Results:** Safe takeoff and baseline hover stability operating on default multicopter PID parameters.<br>• **Footage:** [`media/1st_flight_prometheusFC_withstock_pixhawkPIDs.mp4`](media/1st_flight_prometheusFC_withstock_pixhawkPIDs.mp4) (10s, 30fps) |
